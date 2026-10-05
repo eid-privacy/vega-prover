@@ -48,7 +48,8 @@ pub trait Engine: Clone + Copy + Debug + Send + Sync + Sized + Eq + PartialEq {
     + for<'de> Deserialize<'de>
     + FieldReductionConstants
     + DelayedReduction<Self::Scalar>
-    + MontgomeryLimbs;
+    + MontgomeryLimbs
+    + crate::raw_serde::RawLayout;
 
   /// A type that represents an element of the group
   type GE: Group<Base = Self::Base, Scalar = Self::Scalar> + Serialize + for<'de> Deserialize<'de>;

@@ -13,7 +13,7 @@ use ff::PrimeField;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::errors::VegaError;
+use crate::{errors::VegaError, raw_serde::RawLayout};
 
 /// Threshold below which we use sequential (non-rayon) iteration.
 const PARALLEL_THRESHOLD: usize = 4096;
@@ -44,7 +44,7 @@ pub struct PrecomputedSparseMatrix<F: PrimeField> {
   pub(crate) general_vals: Vec<F>,
 }
 
-impl<F: PrimeField> PrecomputedSparseMatrix<F> {
+impl<F: PrimeField + RawLayout> PrecomputedSparseMatrix<F> {
   /// Build from a CSR SparseMatrix by classifying entries.
   pub fn from_sparse(m: &SparseMatrix<F>) -> Self {
     let num_rows = m.indptr.len() - 1;
@@ -132,7 +132,9 @@ impl<F: PrimeField> PrecomputedSparseMatrix<F> {
       general_vals,
     }
   }
+}
 
+impl<F: PrimeField> PrecomputedSparseMatrix<F> {
   #[inline(always)]
   pub(crate) fn small_mul(coeff: i8, x: F) -> F {
     let abs = coeff.unsigned_abs();
@@ -381,19 +383,26 @@ impl<F: PrimeField> FilteredSpmv<F> {
 
 /// CSR format sparse matrix, We follow the names used by scipy.
 /// Detailed explanation here: https://stackoverflow.com/questions/52299420/scipy-csr-matrix-understand-indptr
+///
+/// The three bulk arrays are serialized as raw, zstd-framed memory (see
+/// [`crate::raw_serde`]): they dominate the size of a prover key and the
+/// derived per-element `serde` path is the bottleneck when loading one.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SparseMatrix<F: PrimeField> {
+pub struct SparseMatrix<F: PrimeField + RawLayout> {
   /// all non-zero values in the matrix
+  #[serde(with = "crate::raw_serde")]
   pub data: Vec<F>,
   /// column indices
+  #[serde(with = "crate::raw_serde")]
   pub indices: Vec<usize>,
   /// row information
+  #[serde(with = "crate::raw_serde")]
   pub indptr: Vec<usize>,
   /// number of columns
   pub cols: usize,
 }
 
-impl<F: PrimeField> SparseMatrix<F> {
+impl<F: PrimeField + RawLayout> SparseMatrix<F> {
   /// Write raw bytes for digest computation (much faster than bincode Serialize).
   pub fn write_digest_bytes<W: std::io::Write>(&self, w: &mut W) -> Result<(), std::io::Error> {
     // Write lengths and cols as fixed-size le bytes
@@ -539,14 +548,14 @@ impl<F: PrimeField> SparseMatrix<F> {
 }
 
 /// Iterator for sparse matrix
-pub struct Iter<'a, F: PrimeField> {
+pub struct Iter<'a, F: PrimeField + RawLayout> {
   matrix: &'a SparseMatrix<F>,
   row: usize,
   i: usize,
   nnz: usize,
 }
 
-impl<'a, F: PrimeField> Iterator for Iter<'a, F> {
+impl<'a, F: PrimeField + RawLayout> Iterator for Iter<'a, F> {
   type Item = (usize, usize, F);
 
   fn next(&mut self) -> Option<Self::Item> {

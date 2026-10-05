@@ -51,6 +51,10 @@ macro_rules! impl_field_reduction_constants {
 
 /// Implement `MontgomeryLimbs` for a field type with `.0` containing `[u64; 4]`.
 ///
+/// Because that is exactly the layout assumption behind
+/// [`RawLayout`](crate::raw_serde::RawLayout), this also implements that
+/// marker for the field type.
+///
 /// # Example
 /// ```ignore
 /// crate::impl_montgomery_limbs!(Fp);
@@ -69,6 +73,8 @@ macro_rules! impl_montgomery_limbs {
         &self.0
       }
     }
+
+    $crate::impl_raw_layout!($field);
   };
 }
 

@@ -135,17 +135,27 @@ impl<E: Engine> DigestHelperTrait<E> for VegaVerifierKey<E> {
 pub struct VegaPrepZkSNARK<E: Engine> {
   ps: PrecommittedState<E>,
   // Cached partial matrix-vector products for precommitted witness columns (deterministic)
+  #[serde(with = "crate::raw_serde")]
   cached_az: Vec<E::Scalar>,
+  #[serde(with = "crate::raw_serde")]
   cached_bz: Vec<E::Scalar>,
+  #[serde(with = "crate::raw_serde")]
   cached_cz: Vec<E::Scalar>,
   // Lazily cached rest-witness commitment (populated on first prove call, deterministic)
   cached_rest_witness: Option<Vec<E::Scalar>>, // rest-witness values (unpadded)
   cached_rest_msm: Option<Vec<E::GE>>,         // raw MSM per row (no blinding)
-  // Pre-allocated scratch buffers (reused across prove calls, avoids mmap + page faults)
+  // Pre-allocated scratch buffers (reused across prove calls, avoids mmap + page faults).
+  // Not serialized: `prove` clears and refills each of them before use, so a
+  // deserialized prep simply starts with empty allocations.
+  #[serde(skip)]
   scratch_az: Vec<E::Scalar>,
+  #[serde(skip)]
   scratch_bz: Vec<E::Scalar>,
+  #[serde(skip)]
   scratch_cz: Vec<E::Scalar>,
+  #[serde(skip)]
   z_buffer: Vec<E::Scalar>,
+  #[serde(skip)]
   evals_rx_buffer: Vec<E::Scalar>,
 }
 

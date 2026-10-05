@@ -5,7 +5,6 @@
 // Source repository: https://github.com/Microsoft/vega-prover
 
 //! Support for generating R1CS using bellpepper.
-use crate::start_span;
 use crate::{
   Blind, Commitment, CommitmentKey, PCS, VerifierKey,
   bellpepper::{shape_cs::ShapeCS, solver::SatisfyingAssignment},
@@ -14,6 +13,8 @@ use crate::{
     R1CSWitness, SparseMatrix, SplitMultiRoundR1CSInstance, SplitMultiRoundR1CSShape,
     SplitR1CSInstance, SplitR1CSShape,
   },
+  raw_serde::RawLayout,
+  start_span,
   traits::{
     Engine,
     circuit::{MultiRoundCircuit, VegaCircuit},
@@ -231,7 +232,7 @@ impl<E: Engine> VegaShape<E> for ShapeCS<E> {
   }
 }
 
-pub(crate) fn add_constraint<S: PrimeField>(
+pub(crate) fn add_constraint<S: PrimeField + RawLayout>(
   X: &mut (
     &mut SparseMatrix<S>,
     &mut SparseMatrix<S>,
@@ -297,6 +298,7 @@ pub struct PrecommittedState<E: Engine> {
   pub(crate) r_W_shared: Option<Blind<E>>,
   pub(crate) comm_W_precommitted: Option<Commitment<E>>,
   pub(crate) r_W_precommitted: Option<Blind<E>>,
+  #[serde(with = "crate::raw_serde")]
   pub(crate) W: Vec<E::Scalar>,
 }
 

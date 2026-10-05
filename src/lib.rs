@@ -34,6 +34,7 @@ mod macros;
 pub mod bellpepper;
 pub mod errors;
 pub mod provider;
+pub mod raw_serde;
 pub mod traits;
 
 // internal modules

@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 pub struct SatisfyingAssignment<E: Engine> {
   // Assignments of variables
   pub(crate) input_assignment: Vec<E::Scalar>,
+  #[serde(with = "crate::raw_serde")]
   pub(crate) aux_assignment: Vec<E::Scalar>,
 }
 use std::fmt;
