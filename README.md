@@ -1,5 +1,21 @@
 # vega-prover: Low-latency client-side ZK proving over signed data
 
+> [!NOTE]
+> **About this fork.** This is the [eid-privacy](https://github.com/eid-privacy) fork of
+> [microsoft/vega-prover](https://github.com/microsoft/vega-prover). The `main` branch tracks
+> upstream unchanged. The `raw-serde` branch (the default here) adds one commit on top of it:
+> `src/raw_serde.rs`, a `serde(with)` helper that stores the prover's large `Vec<Scalar>` and
+> `Vec<usize>` fields as raw little-endian memory, split into independently zstd-compressed
+> frames that are decompressed in parallel straight into the final allocation. It is applied
+> to `SparseMatrix`, the cached `Az/Bz/Cz` vectors, `PrecommittedState::W` and the witness
+> assignment. The prover's unused scratch buffers are no longer serialized.
+>
+> With the SWIYU JWT circuit of [spartan-backend](https://github.com/eid-privacy/spartan-backend)
+> (branch `benchmark`), loading the precomputed prover state takes 0.17 s instead of 0.89 s, for
+> a 31 MiB file. See
+> [PRECOMPUTE_IO.md](https://github.com/eid-privacy/spartan-backend/blob/benchmark/PRECOMPUTE_IO.md)
+> for the measurements. The rest of this README is upstream's.
+
 This repository implements the ZK provers of [Vega](https://eprint.iacr.org/2025/2094) in Rust. They are used for client-side ZK proving of statements over signed data. We focus on optimizing low ZK proving latency, and on settings where statements are proven repeatedly over the same signed data.
 
 This [blog post](https://www.microsoft.com/en-us/research/blog/vega-zero-knowledge-proofs-for-digital-identity-in-the-age-of-ai/) describes the typical application this library targets.
