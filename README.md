@@ -11,9 +11,9 @@
 > assignment. The prover's unused scratch buffers are no longer serialized.
 >
 > With the SWIYU JWT circuit of [spartan-backend](https://github.com/eid-privacy/spartan-backend)
-> (branch `benchmark`), loading the precomputed prover state takes 0.17 s instead of 0.89 s, for
+> (`main`), loading the precomputed prover state takes 0.17 s instead of 0.89 s, for
 > a 31 MiB file. See
-> [PRECOMPUTE_IO.md](https://github.com/eid-privacy/spartan-backend/blob/benchmark/PRECOMPUTE_IO.md)
+> [PRECOMPUTE_IO.md](https://github.com/eid-privacy/spartan-backend/blob/main/PRECOMPUTE_IO.md)
 > for the measurements. The rest of this README is upstream's.
 
 This repository implements the ZK provers of [Vega](https://eprint.iacr.org/2025/2094) in Rust. They are used for client-side ZK proving of statements over signed data. We focus on optimizing low ZK proving latency, and on settings where statements are proven repeatedly over the same signed data.
